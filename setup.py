@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='logcollect',
     version='0.1',
-    packages=['logcollect', 'logcollect.contrib'],
+    packages=['logcollect'],
     url='http://github.com/rutube/logcollect/',
     license='Beer license',
     author='tumbler',
