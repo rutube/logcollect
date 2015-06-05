@@ -99,6 +99,37 @@ worker. Hostnames and process PIDs are added automatically.
 Not supported yet, but idea is marking log messages about same object with ID
 information about this object.
 
+
+## Examples
+
+### Native python logging
+
+```sh
+ python test_native/native_logging.py
+
+```
+
+### Django
+
+```sh
+ python test_django/manage.py test_log
+ 
+```
+
+### Celery
+
+First, start worker:
+
+```sh
+celery worker -A test_celery.app.celery
+```
+
+Then send a task to that worker:
+
+```sh
+python test_celery/send_task.py
+```
+
 ## Related works
 
 AMQPHandler and AMQPLogstashFormatter are copied from 
