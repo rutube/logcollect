@@ -14,15 +14,15 @@ class AMQPLogstashFormatter(logging.Formatter):
     skip_list = (
         'args', 'asctime', 'created', 'exc_info', 'exc_text', 'filename',
         'funcName', 'id', 'levelname', 'levelno', 'lineno', 'module',
-        'msecs', 'msecs', 'message', 'msg', 'name', 'pathname',
+        'msecs', 'msecs', 'message', 'msg', 'name', 'path',
         'processName', 'relativeCreated', 'thread', 'threadName', 'extra')
-
 
     def __init__(self, message_type='Logstash', tags=None, fqdn=False,
                  activity_identity={}):
         super(AMQPLogstashFormatter, self).__init__()
         self.message_type = message_type
         self.tags = tags if tags is not None else []
+        self.seq_no = 1
 
         if fqdn:
             self.host = socket.getfqdn()
@@ -80,11 +80,12 @@ class AMQPLogstashFormatter(logging.Formatter):
             'path': record.pathname,
             'tags': self.tags,
             'type': self.message_type,
-
+            'seq': self.seq_no,
             # Extra Fields
             'levelname': record.levelname,
             'logger': record.name,
         }
+        self.seq_no += 1
 
         # Add extra fields
         message.update(self.get_extra_fields(record))
