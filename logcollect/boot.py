@@ -43,8 +43,9 @@ def default_config(broker_uri='amqp://localhost/', exchange='logstash',
 
 
 def ensure_amqp_handler(broker_uri, exchange, routing_key, durable, level,
-                        activity_identity, logger=root):
+                        activity_identity, logger=None):
     amqp_handler = None
+    logger = logger or root
     for h in _handlers.values():
         if isinstance(h, AMQPHandler):
             amqp_handler = h
@@ -126,7 +127,9 @@ def celery_config(broker_uri='amqp://localhost/',
     def init_logging(**kwargs):
         from celery.utils.log import task_logger
         logger = None if collect_root_logs else task_logger
-        ensure_amqp_handler(broker_uri, exchange, routing_key, durable,
-                               level, activity_identity, logger=logger)
+        if collect_root_logs:
+            ensure_amqp_handler(broker_uri, exchange, routing_key, durable,
+                                level, activity_identity, logger=logger)
 
     signals.worker_process_init.connect(init_logging, weak=False)
+    signals.worker_ready.connect(init_logging, weak=False)

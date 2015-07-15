@@ -2,14 +2,16 @@
 
 # $Id: $
 from logging import getLogger
+import random
 
 from logcollect.boot import default_config
 
-h = default_config('amqp://192.168.70.85', activity_identity={'project': 'logcollect',
-                                                              'subsystem': 'native_test'})
+h = default_config('amqp://guest@localhost',
+                   activity_identity={'project': 'logcollect',
+                                      'subsystem': 'native_test'})
 
 logger = getLogger("test")
 
-logger.info("ROOT")
+logger.info("%s" % random.random())
 
 
