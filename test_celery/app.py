@@ -16,13 +16,16 @@ CELERY_CONFIG = {
 
 from logcollect.boot import celery_config
 
-celery_config('amqp://192.168.70.85', activity_identity={'project': 'logcollect',
-                                                         'subsystem': 'celery_test'})
+celery_config('amqp://guest:guest@127.0.0.1/',
+              collect_root_logs=True,
+              activity_identity={'project': 'logcollect',
+                                 'subsystem': 'celery_test'})
 
 
 celery = Celery(CELERY_CONFIG)
 
+
 @celery.task
 def sample_task(msg='CELERY'):
-    get_task_logger("sample_task").info(msg)
-    get_logger("celery_sample_logger").info(msg)
+    get_task_logger("sample_task").info("get task logger message")
+    get_logger("celery_sample_logger").info("get logger message")
