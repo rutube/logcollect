@@ -134,9 +134,6 @@ python test_celery/send_task.py
 
 AMQPHandler and AMQPLogstashFormatter are copied from 
 [python-logstash](https://github.com/vklochan/python-logstash).
-Thanks for it's author but [pika](https://github.com/pika/pika) 
-doesn't work on python3, so it's replaced with 
-[kombu](https://github.com/celery/kombu).
 
 See also:
 * [RabbitMQ](https://github.com/rabbitmq/rabbitmq-server)
@@ -144,5 +141,3 @@ See also:
 * [Kibana](https://github.com/elastic/kibana)
 * [Django](https://github.com/django/django)
 * [Celery](https://github.com/celery/celery)
-
-
