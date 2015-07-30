@@ -58,7 +58,7 @@ class AMQPLogstashFormatter(logging.Formatter):
 
     @classmethod
     def format_timestamp(cls, time):
-        tstamp = datetime.utcfromtimestamp(time)
+        tstamp = datetime.fromtimestamp(time)
         return tstamp.strftime("%Y-%m-%dT%H:%M:%S") + ".%03d" % (tstamp.microsecond / 1000) + "Z"
 
     @classmethod
