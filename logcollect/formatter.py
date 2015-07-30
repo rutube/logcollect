@@ -14,8 +14,8 @@ class AMQPLogstashFormatter(logging.Formatter):
     skip_list = (
         'args', 'asctime', 'created', 'exc_info', 'exc_text', 'filename',
         'funcName', 'id', 'levelname', 'levelno', 'lineno', 'module',
-        'msecs', 'msecs', 'message', 'msg', 'name', 'pathname',
-        'processName', 'relativeCreated', 'thread', 'threadName', 'extra')
+        'msecs', 'message', 'msg', 'name', 'pathname', 'processName',
+        'relativeCreated', 'thread', 'threadName')
 
     def __init__(self, message_type='Logstash', tags=None, fqdn=False,
                  activity_identity={}, max_seq_no=1000):
@@ -59,11 +59,16 @@ class AMQPLogstashFormatter(logging.Formatter):
     @classmethod
     def format_timestamp(cls, time):
         tstamp = datetime.fromtimestamp(time)
-        return tstamp.strftime("%Y-%m-%dT%H:%M:%S") + ".%03d" % (tstamp.microsecond / 1000) + "Z"
+        dt = tstamp.strftime("%Y-%m-%dT%H:%M:%S")
+        msec = tstamp.microsecond / 1000
+        return '%s.%03dZ' % (dt, msec)
 
     @classmethod
     def format_exception(cls, exc_info):
-        return ''.join(traceback.format_exception(*exc_info)) if exc_info else ''
+        if not exc_info:
+            return ''
+        exception = traceback.format_exception(*exc_info)
+        return ''.join(exception)
 
     @classmethod
     def serialize(cls, message):
