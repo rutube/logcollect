@@ -5,7 +5,7 @@ setup(
     version='0.9',
     packages=['logcollect'],
     url='http://github.com/rutube/logcollect/',
-    license='Beer license',
+    license='Beerware',
     author='tumbler',
     author_email='zimbler@gmail.com',
     description='Helper for collecting logs to ELK stack via RabbitMQ',

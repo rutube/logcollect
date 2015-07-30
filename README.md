@@ -141,5 +141,3 @@ See also:
 * [Kibana](https://github.com/elastic/kibana)
 * [Django](https://github.com/django/django)
 * [Celery](https://github.com/celery/celery)
-
-
