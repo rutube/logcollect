@@ -2,7 +2,7 @@
 
 Python library for centralized log collecting
 
-Provides simple configuration for collecting python logs to ELK stack via 
+Provides simple configuration for collecting python logs to ELK stack via
 RabbitMQ.
 
 Supported message flow is following:
@@ -25,14 +25,14 @@ python.logging
       ||
       \/
     Kibana
-    
+
 ```
 
 ## Mechanics
 
 ### Native logging
 
-`logcollect.boot.default_config` ensures that root logger has correctly 
+`logcollect.boot.default_config` ensures that root logger has correctly
 configured amqp handler.
 
 ### Django
@@ -73,13 +73,14 @@ output {
 ### logcollect
 
 All boot helpers have same parameters:
- * broker_uri - celery-style RabbitMQ connection string, i.e. 
- `amqp://guest@localhost//vhost`
- * exchange, routing_key - message routing info for RabbitMQ
- * durable - message delivery mode
- * level - handler loglevel
- * activity_identity - dict with "process type info"
- 
+
+* broker_uri - celery-style RabbitMQ connection string, i.e.
+`amqp://guest@localhost//vhost`
+* exchange, routing_key - message routing info for RabbitMQ
+* durable - message delivery mode
+* level - handler loglevel
+* activity_identity - dict with "process type info"
+
 ### Activity Identity
 
 Assuming we deployed two projects on same host: "github" and "jenkins".
@@ -91,7 +92,7 @@ Project |   Worker   | Activity identity
 github  |  backend   | `{"project": "github", "application": "backend"}`
 jenkins | background | `{"project": "jenkins", "application": "background"}`
 
-`loggername` could be used for separating different parts of code within a 
+`loggername` could be used for separating different parts of code within a
 worker. Hostnames and process PIDs are added automatically.
 
 ### Correlation ID
@@ -113,7 +114,7 @@ information about this object.
 
 ```sh
  python test_django/manage.py test_log
- 
+
 ```
 
 ### Celery
@@ -132,7 +133,7 @@ python test_celery/send_task.py
 
 ## Related works
 
-AMQPHandler and AMQPLogstashFormatter are copied from 
+AMQPHandler and AMQPLogstashFormatter are copied from
 [python-logstash](https://github.com/vklochan/python-logstash).
 
 See also:
