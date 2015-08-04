@@ -11,7 +11,7 @@ from amqp.connection import Connection, AMQP_LOGGER
 class AMQPHandler(SocketHandler, object):
 
     def __init__(self, broker_uri='amqp://localhost/', exchange='logstash',
-                 exchange_type='fanout',
+                 exchange_type='topic',
                  message_type='logstash', tags=None,
                  durable=True, version=0, extra_fields=True, fqdn=False,
                  facility=None, routing_key='logstash'):
