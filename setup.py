@@ -9,7 +9,7 @@ except ImportError:
 
 setup(
     name='logcollect',
-    version='0.9.1',
+    version='0.10.0',
     long_description=read_md('README.md'),
     packages=['logcollect'],
     url='http://github.com/rutube/logcollect/',
