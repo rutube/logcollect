@@ -3,6 +3,7 @@
 # $Id: $
 from logging.handlers import SocketHandler
 from urlparse import urlparse
+import errno
 
 from amqp import Message
 from amqp.connection import Connection, AMQP_LOGGER
@@ -68,7 +69,12 @@ class AMQPSocket(object):
             self.is_logging = False
 
     def close(self):
-        self.conn.close()
+        try:
+            self.conn.close()
+        except IOError as e:
+            # handle already closed connections
+            if e.errno != errno.EPIPE:
+                raise
 
     @staticmethod
     def _parse_broker_uri(broker_uri):
