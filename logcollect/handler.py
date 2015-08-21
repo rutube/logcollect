@@ -2,32 +2,39 @@
 
 # $Id: $
 from logging.handlers import SocketHandler
+import socket
 from urlparse import urlparse
+import time
 import errno
 
 from amqp import Message
-from amqp.connection import Connection, AMQP_LOGGER
+from amqp.connection import AMQP_LOGGER
+
+from logcollect.nonblocking import NonBlockingConnection
 
 
 class AMQPHandler(SocketHandler, object):
 
     def __init__(self, broker_uri='amqp://localhost/', exchange='logstash',
                  exchange_type='topic',
-                 message_type='logstash', tags=None,
-                 durable=True, version=0, extra_fields=True, fqdn=False,
-                 facility=None, routing_key='logstash'):
+                 durable=True, routing_key='logstash'):
         super(AMQPHandler, self).__init__(None, None)
         self.broker_uri = broker_uri
         self.exchange = exchange
         self.routing_key = routing_key
         self.exchange_type = exchange_type
         self.durable = durable
+        self._timeouted = False
 
     def emit(self, record):
         return super(AMQPHandler, self).emit(record)
 
     def makeSocket(self, **kwargs):
         propagate = AMQP_LOGGER.propagate
+        # try to connect only for 1 second in a minute
+        if self._timeouted and self._timeouted > time.time() - 60:
+            raise socket.timeout()
+
         try:
             AMQP_LOGGER.propagate = False
             amqp_socket = AMQPSocket(self.broker_uri,
@@ -35,6 +42,10 @@ class AMQPHandler(SocketHandler, object):
                                      self.exchange_type,
                                      self.routing_key,
                                      self.durable)
+            self._timeouted = False
+        except socket.timeout:
+            self._timeouted = time.time()
+            raise
         finally:
             AMQP_LOGGER.propagate = propagate
         return amqp_socket
@@ -44,11 +55,14 @@ class AMQPHandler(SocketHandler, object):
 
 
 class AMQPSocket(object):
+    connect_timeout = 1.0
 
     def __init__(self, broker_uri, exchange, exchange_type, routing_key,
                  durable):
         self.is_logging = True
-        self.conn = Connection(**self._parse_broker_uri(broker_uri))
+        self.conn = NonBlockingConnection(
+            connect_timeout=self.connect_timeout,
+            **self._parse_broker_uri(broker_uri))
         self.channel = self.conn.channel()
         self.channel.exchange_declare(exchange=exchange,
                                       type=exchange_type,
