@@ -17,13 +17,14 @@ class AMQPHandler(SocketHandler, object):
 
     def __init__(self, broker_uri='amqp://localhost/', exchange='logstash',
                  exchange_type='topic',
-                 durable=True, routing_key='logstash'):
+                 durable=True, routing_key='logstash', auto_delete=False):
         super(AMQPHandler, self).__init__(None, None)
         self.broker_uri = broker_uri
         self.exchange = exchange
         self.routing_key = routing_key
         self.exchange_type = exchange_type
         self.durable = durable
+        self.auto_delete = auto_delete
         self._timeouted = False
 
     def emit(self, record):
@@ -41,7 +42,8 @@ class AMQPHandler(SocketHandler, object):
                                      self.exchange,
                                      self.exchange_type,
                                      self.routing_key,
-                                     self.durable)
+                                     self.durable,
+                                     self.auto_delete)
             self._timeouted = False
         except socket.timeout:
             self._timeouted = time.time()
@@ -58,7 +60,7 @@ class AMQPSocket(object):
     connect_timeout = 1.0
 
     def __init__(self, broker_uri, exchange, exchange_type, routing_key,
-                 durable):
+                 durable, auto_delete):
         self.is_logging = True
         self.conn = NonBlockingConnection(
             connect_timeout=self.connect_timeout,
@@ -67,7 +69,7 @@ class AMQPSocket(object):
         self.channel.exchange_declare(exchange=exchange,
                                       type=exchange_type,
                                       durable=durable,
-                                      auto_delete=not durable)
+                                      auto_delete=auto_delete)
         self.is_logging = False
         self.exchange = exchange
         self.routing_key = routing_key
