@@ -34,16 +34,8 @@ LOGGING = {
 }
 
 
-def default_config(broker_uri='amqp://localhost/', exchange='logstash',
-                   routing_key='logstash', durable=False, level='DEBUG',
-                   activity_identity={}):
-    config.dictConfig(LOGGING)
-    return ensure_amqp_handler(broker_uri, exchange, routing_key, durable,
-                               level, activity_identity)
-
-
-def ensure_amqp_handler(broker_uri, exchange, routing_key, durable, level,
-                        activity_identity, logger=None):
+def ensure_amqp_handler(broker_uri, exchange, routing_key, durable, auto_delete,
+                        level, activity_identity, logger=None):
     amqp_handler = None
     logger = logger or root
     for h in _handlers.values():
@@ -52,6 +44,7 @@ def ensure_amqp_handler(broker_uri, exchange, routing_key, durable, level,
     if amqp_handler is None:
         amqp_handler = AMQPHandler(broker_uri=broker_uri,
                                    exchange=exchange, durable=durable,
+                                   auto_delete=auto_delete,
                                    routing_key=routing_key)
         amqp_handler.setFormatter(AMQPLogstashFormatter(
             activity_identity=activity_identity))
@@ -65,10 +58,21 @@ def ensure_amqp_handler(broker_uri, exchange, routing_key, durable, level,
     return amqp_handler
 
 
+def default_config(broker_uri='amqp://localhost/', exchange='logstash',
+                   routing_key='logstash', durable=False, auto_delete=False,
+                   level='DEBUG', activity_identity=None):
+    config.dictConfig(LOGGING)
+    activity_identity = activity_identity or {}
+    return ensure_amqp_handler(broker_uri, exchange, routing_key, durable,
+                               auto_delete, level, activity_identity)
+
+
 def django_dict_config(LOGGING, broker_uri='amqp://localhost/',
                        exchange='logstash', routing_key='logstash',
-                       durable=False, level='DEBUG', activity_identity={}):
+                       durable=False, auto_delete=False, level='DEBUG',
+                       activity_identity=None):
     LOGGING.setdefault('handlers', {})
+    activity_identity = activity_identity or {}
     amqp_handler = None
     for name, handler_conf in LOGGING['handlers'].items():
         if handler_conf['class'] == 'logcollect.handler.AMQPHandler':
@@ -113,6 +117,7 @@ def django_dict_config(LOGGING, broker_uri='amqp://localhost/',
     handler_conf.setdefault('exchange', exchange)
     handler_conf.setdefault('routing_key', routing_key)
     handler_conf.setdefault('durable', durable)
+    handler_conf.setdefault('auto_delete', auto_delete)
     handler_conf.setdefault('level', level)
     handler_conf.setdefault('formatter', amqp_formatter)
 
@@ -121,16 +126,20 @@ def django_dict_config(LOGGING, broker_uri='amqp://localhost/',
 
 def celery_config(broker_uri='amqp://localhost/',
                   exchange='logstash', routing_key='logstash',
-                  durable=True, level='DEBUG', activity_identity={},
-                  collect_root_logs=False):
+                  durable=True, level='DEBUG', auto_delete=False,
+                  activity_identity=None, collect_root_logs=False):
+
+    activity_identity = activity_identity or {}
 
     def init_logging(**kwargs):
         from celery.utils.log import task_logger
         if collect_root_logs:
             ensure_amqp_handler(broker_uri, exchange, routing_key, durable,
-                                level, activity_identity, logger=None)
+                                auto_delete, level, activity_identity,
+                                logger=None)
         ensure_amqp_handler(broker_uri, exchange, routing_key, durable,
-                            level, activity_identity, logger=task_logger)
+                            auto_delete, level, activity_identity,
+                            logger=task_logger)
 
     signals.worker_process_init.connect(init_logging, weak=False)
     signals.worker_ready.connect(init_logging, weak=False)
