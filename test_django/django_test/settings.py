@@ -116,6 +116,6 @@ LOGGING = {
 
 from logcollect.boot import django_dict_config
 
-django_dict_config(LOGGING, broker_uri='amqp://guest:guest@127.0.0.1',
+django_dict_config(LOGGING, broker_uri='amqp://guest:guest@127.0.0.1/',
                    activity_identity={'project': 'logcollect',
                                       'subsystem': 'django_test'})
