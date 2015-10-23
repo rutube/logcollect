@@ -21,14 +21,24 @@ class AMQPHandler(SocketHandler, object):
         super(AMQPHandler, self).__init__(None, None)
         self.broker_uri = broker_uri
         self.exchange = exchange
-        self.routing_key = routing_key
+        self._routing_key = routing_key
+        self._suffix = None
         self.exchange_type = exchange_type
         self.durable = durable
         self.auto_delete = auto_delete
         self._timeouted = False
 
+    def get_routing_key(self):
+        if self._suffix:
+            return '%s.%s' % (self._routing_key, self._suffix)
+        return self._routing_key
+
     def emit(self, record):
-        return super(AMQPHandler, self).emit(record)
+        try:
+            self._suffix = record.name
+            return super(AMQPHandler, self).emit(record)
+        finally:
+            self._suffix = None
 
     def makeSocket(self, **kwargs):
         propagate = AMQP_LOGGER.propagate
@@ -41,7 +51,7 @@ class AMQPHandler(SocketHandler, object):
             amqp_socket = AMQPSocket(self.broker_uri,
                                      self.exchange,
                                      self.exchange_type,
-                                     self.routing_key,
+                                     self.get_routing_key,
                                      self.durable,
                                      self.auto_delete)
             self._timeouted = False
@@ -57,9 +67,9 @@ class AMQPHandler(SocketHandler, object):
 
 
 class AMQPSocket(object):
-    connect_timeout = 1.0
+    connect_timeout = 10.0
 
-    def __init__(self, broker_uri, exchange, exchange_type, routing_key,
+    def __init__(self, broker_uri, exchange, exchange_type, routing_key_func,
                  durable, auto_delete):
         self.is_logging = True
         self.conn = NonBlockingConnection(
@@ -72,7 +82,10 @@ class AMQPSocket(object):
                                       auto_delete=auto_delete)
         self.is_logging = False
         self.exchange = exchange
-        self.routing_key = routing_key
+        if callable(routing_key_func):
+            self.routing_key = routing_key_func
+        else:
+            self.routing_key = lambda: routing_key_func
 
     def sendall(self, data):
         if self.is_logging:
@@ -80,13 +93,15 @@ class AMQPSocket(object):
         self.is_logging = True
         try:
             msg = Message(data)
-            self.channel.basic_publish(msg, self.exchange, self.routing_key)
+            self.channel.basic_publish(msg, self.exchange, self.routing_key())
         finally:
             self.is_logging = False
 
     def close(self):
         try:
             self.conn.close()
+        except socket.error:
+            pass
         except IOError as e:
             # handle already closed connections
             if e.errno != errno.EPIPE:
