@@ -60,8 +60,8 @@ class AMQPLogstashFormatter(logging.Formatter):
     def format_timestamp(cls, time):
         tstamp = datetime.fromtimestamp(time)
         dt = tstamp.strftime("%Y-%m-%dT%H:%M:%S")
-        msec = tstamp.microsecond / 1000
-        return '%s.%03dZ' % (dt, msec)
+        mksec = tstamp.microsecond
+        return '%s.%06dZ' % (dt, mksec)
 
     @classmethod
     def format_exception(cls, exc_info):
