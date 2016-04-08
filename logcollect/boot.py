@@ -5,8 +5,6 @@
 
 from logging import root, _handlers, config
 
-from celery import signals
-
 from logcollect.formatter import AMQPLogstashFormatter
 from logcollect.handler import AMQPHandler
 
@@ -140,6 +138,8 @@ def celery_config(broker_uri='amqp://localhost/',
         ensure_amqp_handler(broker_uri, exchange, routing_key, durable,
                             auto_delete, level, activity_identity,
                             logger=task_logger)
+
+    from celery import signals
 
     signals.worker_process_init.connect(init_logging, weak=False)
     signals.worker_ready.connect(init_logging, weak=False)
