@@ -3,12 +3,12 @@
 # $Id: $
 from logging.handlers import SocketHandler
 import socket
-from urlparse import urlparse
 import time
 import errno
 
 from amqp import Message
 from amqp.connection import AMQP_LOGGER
+from six.moves.urllib.parse import urlparse
 
 from logcollect.nonblocking import NonBlockingConnection
 
