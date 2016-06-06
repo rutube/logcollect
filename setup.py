@@ -17,5 +17,5 @@ setup(
     author='tumbler',
     author_email='zimbler@gmail.com',
     description='Helper for collecting logs to ELK stack via RabbitMQ',
-    setup_requires=['amqp', 'six],
+    setup_requires=['amqp', 'six'],
 )
